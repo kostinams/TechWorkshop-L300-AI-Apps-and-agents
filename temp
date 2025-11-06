@@ -1,0 +1,26 @@
+resourceGroup="TechWorkshopL300"
+cosmosDbAccountName="xjz576d3poyao-cosmosdb"
+# This is the name of your Azure AI Search account. It will be something like xxxxxxxxxxxxx-search
+aiSearchName="xjz576d3poyao-search"
+# This is the name of your Azure AI Foundry account. It will be something like xxxxxxxxxxxxx
+# In the deployment script, the Type is Microsoft.CognitiveServices/accounts
+aiFoundryName="aif-xjz576d3poyao"
+# This is the name of your Azure AI Foundry project. It will be something like proj-xxxxxxxxxx.
+# Its Type in the deployment script is Microsoft.CognitiveServices/accounts/projects
+aiProjectName="proj-xjz576d3poyao (aif-xjz576d3poyao/proj-xjz576d3poyao)"
+
+
+
+
+principalId=`az ad signed-in-user show --query id -o tsv`
+az search service update --resource-group $resourceGroup --name $aiSearchName --set identity.type=SystemAssigned
+aiSearchManagedIdentityId=`az search service show --resource-group $resourceGroup --name "$aiSearchName" --query identity.principalId -o tsv`
+az cosmosdb sql role assignment create --account-name $cosmosDbAccountName --resource-group $resourceGroup --scope "/" --principal-id $principalId --role-definition-id "00000000-0000-0000-0000-000000000002"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cosmos DB Account Reader Role" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.DocumentDB/databaseAccounts/$cosmosDbAccountName"
+az cosmosdb sql role assignment create --account-name $cosmosDbAccountName --resource-group $resourceGroup --scope "/" --principal-id $aiSearchManagedIdentityId --role-definition-id "00000000-0000-0000-0000-000000000001"
+
+az cosmosdb sql role assignment create --account-name $cosmosDbAccountName --resource-group $resourceGroup --scope "/" --principal-id $aiSearchManagedIdentityId --role-definition-id "00000000-0000-0000-0000-000000000002"
+
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cognitive Services OpenAI User" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.CognitiveServices/accounts/$aiFoundryName/projects/$aiProjectName"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cognitive Services OpenAI User" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.CognitiveServices/accounts/$aiFoundryName"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cognitive Services Contributor" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.CognitiveServices/accounts/$aiFoundryName/projects/$aiProjectName"

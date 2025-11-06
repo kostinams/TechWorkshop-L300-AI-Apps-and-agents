@@ -21,8 +21,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the code
 COPY . .
 
-# Copy .env file into the image (for python-dotenv)
-COPY .env .env
+# The .env file will be created during the CI/CD build process
+# and copied into the image. This ensures secrets are handled securely.
 
 # Expose the port (default FastAPI/uvicorn port)
 EXPOSE 8000

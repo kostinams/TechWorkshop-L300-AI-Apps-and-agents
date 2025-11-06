@@ -1,8 +1,30 @@
+# Python cache and compiled files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.log
-__pycache__/
+
+# Environment files - prevent accidental inclusion
+# The .env file will be created during CI/CD build process
+.env*
+!.env
+
+# Data and virtual environments  
 data/
 venv/
+.venv/
+env/
+
+# Development files
+.git/
+.gitignore
+.pytest_cache/
+.coverage
+.tox/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
